@@ -2,11 +2,12 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "build": "vite build",
-        "build:ssr": "vite build && vite build --ssr",
-        "dev": "vite",
+        "build": "npm run types:generate && vite build",
+        "build:ssr": "npm run types:generate && vite build && vite build --ssr",
+        "dev": "npm run types:generate && vite",
         "format": "prettier --write resources/",
         "format:check": "prettier --check resources/",
+        "types:generate": "php artisan types:generate",
         "lint": "eslint . --fix",
         "types": "tsc --noEmit"
     },
