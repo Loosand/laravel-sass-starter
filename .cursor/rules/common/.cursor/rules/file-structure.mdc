@@ -1,0 +1,62 @@
+# File Structure and Organization
+
+## Backend File Structure
+
+```
+app/
+├── Data/           # DTOs (Data Transfer Objects)
+├── Enums/          # Enum classes
+├── Http/
+│   ├── Controllers/
+│   ├── Middleware/
+│   └── Requests/   # Form validation classes
+├── Models/         # Eloquent models
+└── Providers/
+```
+
+## Frontend File Structure
+
+```
+resources/js/
+├── components/     # Reusable components
+│   └── ui/        # shadcn/ui components
+├── layouts/       # Layout components
+├── pages/         # Page components (Inertia.js pages)
+├── types/         # TypeScript type definitions
+│   └── generated.d.ts
+├── hooks/         # Custom React hooks
+├── constants/     # Constant configurations
+└── routes/        # Route definitions (Ziggy generated)
+```
+
+## File Naming Conventions
+
+### PHP Files
+
+- Controllers: `PascalCase` + `Controller` suffix
+- Models: `PascalCase` singular
+- Requests: `PascalCase` + action + `Request` suffix
+- Data/DTOs: `PascalCase` + `Data` suffix
+- Enums: `PascalCase` singular
+
+### TypeScript/React Files
+
+- Components: `PascalCase.tsx`
+- Pages: `kebab-case.tsx` or `camelCase.tsx`
+- Types: `camelCase.d.ts`
+- Hooks: `camelCase.ts` with `use` prefix
+- Constants: `camelCase.ts`
+
+## Import Organization
+
+- Group imports by type (external libraries, internal modules, relative imports)
+- Sort alphabetically within each group
+- Use absolute imports with `@/` prefix for internal modules
+
+## Best Practices
+
+- Keep files under 300 lines when possible
+- Use descriptive file names that reflect their purpose
+- Group related files in appropriate directories
+- Maintain consistent directory structure across similar features
+- Use index files to simplify imports when appropriate

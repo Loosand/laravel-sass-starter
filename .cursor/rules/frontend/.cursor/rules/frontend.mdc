@@ -1,0 +1,32 @@
+---
+description: React/TypeScript Frontend Rules
+globs:
+alwaysApply: true
+---
+
+## Inertia.js Page Components
+
+- Use Inertia's router for navigation
+- Get backend-passed data from props
+- Use usePage hook to get shared data
+
+Reference: `resources/js/pages/samples/todos/index.tsx`
+
+## shadcn/ui Component Usage
+
+- Prioritize using existing shadcn/ui components in the project
+- Maintain component consistency and accessibility
+- Use Tailwind CSS for style customization
+
+Reference: `resources/js/components/ui/`
+
+## Type Safety
+
+- Use generated TypeScript types from Laravel Data DTOs
+- Generate types with: `php artisan typescript:generate`
+- Generated types are located at: `resources/js/types/generated.d.ts`
+- All business types are available through the global `App` type object
+- Never manually write business types - always use generated types, Unless it is truly necessary
+- Define interfaces only for component props and local state
+
+Reference: `resources/js/types/generated.d.ts`, `app/Console/Commands/GenerateTypescriptTypes.php`

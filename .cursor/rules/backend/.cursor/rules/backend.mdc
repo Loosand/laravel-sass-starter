@@ -1,0 +1,44 @@
+---
+description: PHP/Laravel Backend Rules
+globs:
+alwaysApply: true
+---
+
+## Type Declarations
+
+- All PHP files must use `declare(strict_types=1);`
+- Method parameters and return values must have type declarations
+
+Reference: `app/Http/Controllers/TodoController.php`
+
+## Model Standards
+
+- Define $fillable attributes
+- Use $casts for type conversion
+- Use Laravel Enums for enum fields
+
+Reference: `app/Models/Todo.php`
+
+## Controller Standards
+
+- Use authentication middleware to protect routes requiring login
+- Implement user data isolation (users can only operate on their own data)
+- Use FormRequest for data validation
+- Return Inertia responses for frontend rendering
+
+Reference: `app/Http/Controllers/TodoController.php`
+
+## Data Transfer Objects (DTOs)
+
+- Use Spatie Laravel Data package
+- Add TypeScript transformation annotations
+
+Reference: `app/Data/TodoData.php`
+
+## Request Validation
+
+- Use FormRequest classes for validation
+- Check permissions in authorize method
+- Use Laravel enums for validation
+
+Reference: `app/Http/Requests/StoreTodoRequest.php`

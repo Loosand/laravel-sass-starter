@@ -1,0 +1,29 @@
+# Pagination Standards
+
+## Backend Pagination
+
+- Use Laravel's built-in pagination
+- Return pagination metadata in consistent format
+- Support search and filtering with pagination
+
+Reference: `app/Http/Controllers/TodoController.php`
+
+## Frontend Pagination Component
+
+- Create reusable pagination components
+- Support page jumping and previous/next navigation
+- Display current page information
+- Preserve state and scroll position
+
+## Search and Filter Integration
+
+- Combine pagination with search and filters
+- Preserve filter state during pagination
+- Reset to page 1 when filters change
+
+## Performance Considerations
+
+- Use appropriate page sizes (10-25 items per page)
+- Implement cursor-based pagination for large datasets when needed
+- Consider infinite scroll for mobile interfaces
+- Cache pagination results when appropriate

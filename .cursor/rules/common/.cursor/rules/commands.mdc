@@ -1,0 +1,116 @@
+---
+description: Common Business Commands
+alwaysApply: false
+---
+
+## Laravel Commands
+
+### Cache Management
+
+- Clear all caches: `php artisan optimize:clear`
+- Clear application cache: `php artisan cache:clear`
+- Clear config cache: `php artisan config:clear`
+- Clear route cache: `php artisan route:clear`
+- Clear view cache: `php artisan view:clear`
+
+### Database Operations
+
+- Run migrations: `php artisan migrate`
+- Rollback migrations: `php artisan migrate:rollback`
+- Seed database: `php artisan db:seed`
+- Fresh migration with seeding: `php artisan migrate:fresh --seed`
+
+### Code Generation
+
+- Make controller: `php artisan make:controller TodoController`
+- Make model: `php artisan make:model Todo`
+- Make request: `php artisan make:request StoreTodoRequest`
+- Make migration: `php artisan make:migration create_todos_table`
+
+## Type Generation Commands
+
+### Generate TypeScript Types
+
+- Generate types from Laravel Data DTOs: `php artisan typescript:generate`
+- Types are generated to: `resources/js/types/generated.d.ts`
+
+### Generate Routes (Ziggy)
+
+- Generate route definitions: `php artisan ziggy:generate`
+- Routes are generated to: `resources/js/routes/index.js`
+
+## Filament Commands
+
+### Installation & Setup
+
+- Install Filament: `php artisan filament:install --panels`
+- Create admin user: `php artisan make:filament-user`
+
+### Resource Generation
+
+- Make Filament resource: `php artisan make:filament-resource Todo`
+- Make Filament page: `php artisan make:filament-page TodoSettings`
+- Make Filament widget: `php artisan make:filament-widget TodoStats`
+
+### Asset Management
+
+- Publish Filament assets: `php artisan filament:assets`
+- Clear Filament cache: `php artisan filament:clear-cached-components`
+
+## PNPM Commands
+
+### Package Management
+
+- Install dependencies: `pnpm install`
+- Add package: `pnpm add package-name`
+- Add dev package: `pnpm add -D package-name`
+- Remove package: `pnpm remove package-name`
+- Update packages: `pnpm update`
+
+### Development
+
+- Start dev server: `pnpm dev`
+- Build for production: `pnpm build`
+- Preview production build: `pnpm preview`
+
+### Code Quality
+
+- Run linting: `pnpm lint`
+- Fix linting issues: `pnpm lint:fix`
+- Run type checking: `pnpm type-check`
+
+## Testing Commands
+
+### PHP Testing
+
+- Run all tests: `php artisan test`
+- Run specific test: `php artisan test --filter TodoTest`
+- Run tests with coverage: `php artisan test --coverage`
+
+### Frontend Testing
+
+- Run frontend tests: `pnpm test`
+- Run tests in watch mode: `pnpm test:watch`
+
+## Development Workflow
+
+### Daily Development
+
+1. `php artisan optimize:clear` - Clear caches
+2. `pnpm dev` - Start frontend dev server
+3. `php artisan serve` - Start Laravel dev server
+4. `php artisan typescript:generate` - Update types after backend changes
+
+### After Pulling Changes
+
+1. `pnpm install` - Update frontend dependencies
+2. `composer install` - Update PHP dependencies
+3. `php artisan migrate` - Run new migrations
+4. `php artisan optimize:clear` - Clear all caches
+5. `php artisan typescript:generate` - Regenerate types
+
+### Before Deployment
+
+1. `pnpm build` - Build frontend assets
+2. `php artisan optimize` - Optimize for production
+3. `php artisan migrate --force` - Run migrations in production

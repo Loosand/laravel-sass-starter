@@ -1,0 +1,24 @@
+---
+description: General Project Rules
+alwaysApply: true
+---
+
+## Code Quality Standards
+
+- Add comments for complex business logic
+- Follow SOLID principles where applicable
+
+## File Organization
+
+- Keep files focused on a single responsibility
+- Use consistent naming conventions across the project
+
+## Error Handling
+
+- Always handle potential errors gracefully
+- Provide meaningful error messages to users
+- Log errors appropriately for debugging
+
+## Security Best Practices
+
+- Never expose sensitive information in client-side code
