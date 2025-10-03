@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Enums\TodoCategory;
 use App\Enums\TodoStatus;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -70,6 +71,7 @@ class TodoFactory extends Factory
             'status' => fake()->randomElement(TodoStatus::cases())->value,
             'category' => fake()->randomElement(TodoCategory::cases())->value,
             'due_date' => fake()->optional(0.5)->dateTimeBetween('now', '+30 days')?->format('Y-m-d'),
+            'user_id' => User::factory(),
         ];
     }
 

@@ -13,7 +13,12 @@ class UpdateTodoRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        if (!auth()->check()) {
+            return false;
+        }
+
+        $todo = $this->route('todo');
+        return $todo && $todo->user_id === auth()->id();
     }
 
     public function rules(): array

@@ -10,7 +10,7 @@ import { logout } from '@/routes';
 import { edit } from '@/routes/profile';
 import { type User } from '@/types';
 import { Link, router } from '@inertiajs/react';
-import { LogOut, Settings } from 'lucide-react';
+import { LogOut, Settings, Shield } from 'lucide-react';
 
 interface UserMenuContentProps {
     user: User;
@@ -32,6 +32,7 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
                 </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
+
             <DropdownMenuGroup>
                 <DropdownMenuItem asChild>
                     <Link
@@ -45,8 +46,23 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
                         Settings
                     </Link>
                 </DropdownMenuItem>
+
+                {user.isAdmin && (
+                    <DropdownMenuItem asChild>
+                        <a
+                            className="block w-full"
+                            href="/admin"
+                            target="_blank"
+                            onClick={cleanup}
+                        >
+                            <Shield className="mr-2" />
+                            Admin Panel
+                        </a>
+                    </DropdownMenuItem>
+                )}
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
+
             <DropdownMenuItem asChild>
                 <Link
                     className="block w-full"
