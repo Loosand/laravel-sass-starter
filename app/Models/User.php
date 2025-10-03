@@ -6,12 +6,22 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Lab404\Impersonate\Models\Impersonate;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, TwoFactorAuthenticatable;
+    use HasFactory, Notifiable, TwoFactorAuthenticatable, Impersonate;
+
+    /**
+     * Admin email addresses
+     *
+     * @var array<string>
+     */
+    protected static $adminEmails = [
+        'admin@example.com',
+    ];
 
     /**
      * The attributes that are mass assignable.
@@ -45,5 +55,55 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * Determine if the user can impersonate other users.
+     *
+     * @return bool
+     */
+    public function canImpersonate()
+    {
+        // For example, only allow admin users to impersonate
+        // You can customize this logic based on your requirements
+        return $this->hasRole('admin');
+    }
+
+    /**
+     * Determine if the user can be impersonated.
+     *
+     * @return bool
+     */
+    public function canBeImpersonated()
+    {
+        // For example, prevent admin users from being impersonated
+        // You can customize this logic based on your requirements
+        return !$this->hasRole('admin');
+    }
+
+    /**
+     * Check if the user is an admin based on email address.
+     *
+     * @return bool
+     */
+    public function isAdmin()
+    {
+        return in_array($this->email, static::$adminEmails);
+    }
+
+    /**
+     * Check if user has a specific role.
+     *
+     * @param string $role
+     * @return bool
+     */
+    public function hasRole($role)
+    {
+        if ($role === 'admin') {
+            return $this->isAdmin();
+        }
+        
+        // Add other role checking logic here if needed
+        return false;
     }
 }
