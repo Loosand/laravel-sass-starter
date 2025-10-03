@@ -21,6 +21,7 @@ class User extends Authenticatable
      */
     protected static $adminEmails = [
         'admin@example.com',
+        'loosand@163.com'
     ];
 
     /**
@@ -105,5 +106,47 @@ class User extends Authenticatable
         
         // Add other role checking logic here if needed
         return false;
+    }
+
+    /**
+     * Impersonate another user.
+     *
+     * @param User $user
+     * @return bool
+     */
+    public function impersonate(User $user)
+    {
+        if (!$this->canImpersonate()) {
+            return false;
+        }
+
+        if (!$user->canBeImpersonated()) {
+            return false;
+        }
+
+        $manager = app(\Lab404\Impersonate\Services\ImpersonateManager::class);
+        return $manager->take($this, $user);
+    }
+
+    /**
+     * Stop impersonating and return to original user.
+     *
+     * @return bool
+     */
+    public function stopImpersonating()
+    {
+        $manager = app(\Lab404\Impersonate\Services\ImpersonateManager::class);
+        return $manager->leave();
+    }
+
+    /**
+     * Check if currently impersonating another user.
+     *
+     * @return bool
+     */
+    public function isImpersonating()
+    {
+        $manager = app(\Lab404\Impersonate\Services\ImpersonateManager::class);
+        return $manager->isImpersonating();
     }
 }

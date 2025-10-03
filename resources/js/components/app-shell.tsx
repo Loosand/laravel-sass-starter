@@ -1,3 +1,4 @@
+import ImpersonateExitButton from '@/components/impersonate-exit-button';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { Toaster } from '@/components/ui/sonner';
 import { SharedData } from '@/types';
@@ -9,13 +10,19 @@ interface AppShellProps {
 }
 
 export function AppShell({ children, variant = 'header' }: AppShellProps) {
-    const isOpen = usePage<SharedData>().props.sidebarOpen;
+    const { props } = usePage<SharedData>();
+    const isOpen = props.sidebarOpen;
+    const impersonation = props.impersonation;
 
     if (variant === 'header') {
         return (
             <div className="flex min-h-screen w-full flex-col">
                 {children}
                 <Toaster />
+
+                <ImpersonateExitButton
+                    isImpersonating={impersonation?.isImpersonating || false}
+                />
             </div>
         );
     }
@@ -24,6 +31,9 @@ export function AppShell({ children, variant = 'header' }: AppShellProps) {
         <SidebarProvider defaultOpen={isOpen}>
             {children}
             <Toaster />
+            <ImpersonateExitButton
+                isImpersonating={impersonation?.isImpersonating || false}
+            />
         </SidebarProvider>
     );
 }
