@@ -9,6 +9,7 @@ use App\Http\Requests\StoreTodoRequest;
 use App\Http\Requests\UpdateTodoRequest;
 use App\Models\Todo;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -22,6 +23,7 @@ class TodoController extends Controller
         $search = $request->get('search');
 
         $todos = Todo::query()
+            ->where('user_id', Auth::id())
             ->when($search, function ($query, $searchTerm) {
                 $query->where(function ($q) use ($searchTerm) {
                     $q->where('title', 'like', "%{$searchTerm}%")
@@ -56,13 +58,20 @@ class TodoController extends Controller
 
     public function store(StoreTodoRequest $request)
     {
-        Todo::create($request->validated());
+        Todo::create([
+            ...$request->validated(),
+            'user_id' => Auth::id(),
+        ]);
 
         return redirect()->route('todos.index')->with('success', 'Todo created successfully');
     }
     
     public function update(UpdateTodoRequest $request, Todo $todo)
     {
+        if ($todo->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $todo->update($request->validated());
 
         return redirect()->route('todos.index')->with('success', 'Todo updated successfully');
@@ -70,6 +79,10 @@ class TodoController extends Controller
 
     public function destroy(Todo $todo)
     {
+        if ($todo->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $todo->delete();
 
         return redirect()->route('todos.index')->with('success', 'Todo deleted successfully');
@@ -77,6 +90,10 @@ class TodoController extends Controller
 
     public function toggleStatus(Todo $todo)
     {
+        if ($todo->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $newStatus = match ($todo->status->value) {
             'pending' => 'in_progress',
             'in_progress' => 'completed',

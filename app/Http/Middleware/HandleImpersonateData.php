@@ -25,7 +25,6 @@ class HandleImpersonateData
             $originalUser = null;
             
             if ($isImpersonating) {
-                // 获取原始用户信息
                 $originalUserId = session()->get('impersonate.original_id');
                 if ($originalUserId) {
                     $originalUser = \App\Models\User::find($originalUserId);
