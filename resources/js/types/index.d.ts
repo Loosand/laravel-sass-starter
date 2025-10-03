@@ -41,3 +41,10 @@ export interface User {
     updated_at: string;
     [key: string]: unknown; // This allows for additional properties...
 }
+
+export interface Filters {
+    search?: string;
+    status?: App.Enums.TodoStatus;
+    category?: App.Enums.TodoCategory;
+    [key: string]: unknown;
+}
