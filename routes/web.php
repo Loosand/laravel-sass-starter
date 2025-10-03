@@ -3,6 +3,9 @@
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
+// https://github.com/404labfr/laravel-impersonate?tab=readme-ov-file#rationale
+Route::impersonate();
+
 Route::get('/', function () {
     return Inertia::render('welcome');
 })->name('home');
