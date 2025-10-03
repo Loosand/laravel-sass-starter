@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
     Dialog,
@@ -24,6 +24,15 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+    Pagination,
+    PaginationContent,
+    PaginationEllipsis,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+} from '@/components/ui/pagination';
 import {
     Select,
     SelectContent,
@@ -47,7 +56,13 @@ interface TodosIndexProps {
     pagination: {
         current_page: number;
         last_page: number;
+        per_page: number;
         total: number;
+        from: number | null;
+        to: number | null;
+        has_more_pages: boolean;
+        prev_page_url: string | null;
+        next_page_url: string | null;
     };
     filters: Filters;
 }
@@ -174,11 +189,24 @@ export default function TodosIndex({
         }
     };
 
+    const handlePageChange = (page: number) => {
+        const params: Record<string, string | number> = { page };
+
+        // Preserve current filters
+        if (filters.search) params.search = filters.search;
+        if (filters.status) params.status = filters.status;
+        if (filters.category) params.category = filters.category;
+
+        router.get(todos.index().url, params, {
+            preserveState: true,
+            preserveScroll: true,
+        });
+    };
+
     return (
         <AppLayout>
             <Head title="Todo List" />
-            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4 sm:gap-6 sm:p-6">
-                {/* Header */}
+            <div className="mx-40 flex flex-col gap-4 p-4 sm:gap-6 sm:p-6">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div className="space-y-1">
                         <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
@@ -299,7 +327,6 @@ export default function TodosIndex({
                     </Dialog>
                 </div>
 
-                {/* Filters */}
                 <div className="space-y-4">
                     {/* Search Input - Full width on mobile */}
                     <div className="relative w-full">
@@ -402,91 +429,94 @@ export default function TodosIndex({
                     </div>
                 </div>
 
-                {/* Statistics Cards */}
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:gap-4">
-                    <Card className="transition-all hover:shadow-md">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">
-                                Total Tasks
-                            </CardTitle>
-                            <span className="text-xl sm:text-2xl">📋</span>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-xl font-bold sm:text-2xl">
-                                {pagination.total}
+                <div className="flex gap-4">
+                    <Card className="flex-1 border-border/50 bg-card/50 p-0">
+                        <CardContent className="p-3">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-xs font-medium text-muted-foreground">
+                                        Total Tasks
+                                    </p>
+                                    <p className="text-lg font-semibold">
+                                        {pagination.total}
+                                    </p>
+                                </div>
+                                <span className="text-lg">📋</span>
                             </div>
                         </CardContent>
                     </Card>
 
-                    <Card className="transition-all hover:shadow-md">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">
-                                Completed
-                            </CardTitle>
-                            <span className="text-xl sm:text-2xl">✅</span>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-xl font-bold sm:text-2xl">
-                                {
-                                    todoList.filter(
-                                        (todo) => todo.status === 'completed',
-                                    ).length
-                                }
+                    <Card className="flex-1 border-border/50 bg-card/50 p-0">
+                        <CardContent className="p-3">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-xs font-medium text-muted-foreground">
+                                        Completed
+                                    </p>
+                                    <p className="text-lg font-semibold">
+                                        {
+                                            todoList.filter(
+                                                (todo) =>
+                                                    todo.status === 'completed',
+                                            ).length
+                                        }
+                                    </p>
+                                </div>
+                                <span className="text-lg">✅</span>
                             </div>
                         </CardContent>
                     </Card>
 
-                    <Card className="transition-all hover:shadow-md">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">
-                                In Progress
-                            </CardTitle>
-                            <span className="text-xl sm:text-2xl">🔄</span>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-xl font-bold sm:text-2xl">
-                                {
-                                    todoList.filter(
-                                        (todo) => todo.status === 'in_progress',
-                                    ).length
-                                }
+                    <Card className="flex-1 border-border/50 bg-card/50 p-0">
+                        <CardContent className="p-3">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-xs font-medium text-muted-foreground">
+                                        In Progress
+                                    </p>
+                                    <p className="text-lg font-semibold">
+                                        {
+                                            todoList.filter(
+                                                (todo) =>
+                                                    todo.status ===
+                                                    'in_progress',
+                                            ).length
+                                        }
+                                    </p>
+                                </div>
+                                <span className="text-lg">🔄</span>
                             </div>
                         </CardContent>
                     </Card>
                 </div>
 
-                {/* Todo List */}
-                <div className="space-y-3 sm:space-y-4">
+                <div className="space-y-2">
                     {todoList.length === 0 ? (
-                        <Card>
-                            <CardContent className="flex flex-col items-center justify-center py-8 sm:py-12">
-                                <div className="mb-4 text-4xl sm:text-6xl">
-                                    📝
-                                </div>
-                                <h3 className="text-base font-semibold sm:text-lg">
+                        <Card className="border-dashed">
+                            <CardContent className="flex flex-col items-center justify-center py-6">
+                                <div className="mb-3 text-3xl">📝</div>
+                                <h3 className="text-sm font-medium">
                                     No todos yet
                                 </h3>
-                                <p className="mb-4 text-center text-sm text-muted-foreground sm:text-base">
+                                <p className="mb-3 text-center text-xs text-muted-foreground">
                                     Get started by creating your first todo
                                     item.
                                 </p>
                                 <Button
+                                    size="sm"
                                     onClick={() => setIsCreateDialogOpen(true)}
                                     className="w-full sm:w-auto"
                                 >
-                                    <Plus className="mr-2 h-4 w-4" />
+                                    <Plus className="mr-2 h-3 w-3" />
                                     Add Your First Todo
                                 </Button>
                             </CardContent>
                         </Card>
                     ) : (
                         todoList.map((todo) => (
-                            <Card
-                                key={todo.id}
-                                className="transition-all hover:shadow-md"
-                            >
-                                <CardContent className="p-4 sm:p-6">
-                                    <div className="flex items-start gap-3">
+                            <Card key={todo.id} className="p-0">
+                                <CardContent className="p-3">
+                                    <div className="flex items-center gap-3">
                                         <Checkbox
                                             checked={
                                                 todo.status === 'completed'
@@ -495,146 +525,128 @@ export default function TodosIndex({
                                                 handleToggleStatus(todo.id)
                                             }
                                             disabled={toggleProcessing}
-                                            className="mt-1 flex-shrink-0"
+                                            className="flex-shrink-0"
                                         />
-                                        <div className="flex-1 space-y-2">
-                                            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                                                <div className="space-y-2">
-                                                    <h3
-                                                        className={`text-sm font-semibold sm:text-base ${todo.status === 'completed' ? 'text-muted-foreground line-through' : ''}`}
-                                                    >
-                                                        {todo.title}
-                                                    </h3>
-                                                    <div className="flex flex-wrap gap-2">
-                                                        <Badge
-                                                            className={cn(
-                                                                'text-xs',
-                                                                TodoConfig
-                                                                    .status
-                                                                    .colors[
-                                                                    todo.status
-                                                                ],
-                                                            )}
-                                                        >
-                                                            {
-                                                                TodoConfig
-                                                                    .status
-                                                                    .labels[
-                                                                    todo.status
-                                                                ]
-                                                            }
-                                                        </Badge>
-                                                        <Badge
-                                                            variant="outline"
-                                                            className="text-xs"
-                                                        >
-                                                            {
-                                                                TodoConfig
-                                                                    .category
-                                                                    .labels[
-                                                                    todo
-                                                                        .category
-                                                                ]
-                                                            }
-                                                        </Badge>
-                                                    </div>
-                                                </div>
-                                                <div className="flex-shrink-0">
-                                                    <AlertDialog
-                                                        open={
-                                                            todoToDelete ===
-                                                            todo.id
-                                                        }
-                                                        onOpenChange={(open) =>
-                                                            !open &&
-                                                            setTodoToDelete(
-                                                                null,
-                                                            )
-                                                        }
-                                                    >
-                                                        <AlertDialogTrigger
-                                                            asChild
-                                                        >
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="sm"
-                                                                onClick={() =>
-                                                                    handleDeleteClick(
-                                                                        todo.id,
-                                                                    )
-                                                                }
-                                                                disabled={
-                                                                    deleteProcessing
-                                                                }
-                                                                className="text-destructive hover:text-destructive"
-                                                            >
-                                                                <Trash2 className="h-4 w-4" />
-                                                            </Button>
-                                                        </AlertDialogTrigger>
-                                                        <AlertDialogContent>
-                                                            <AlertDialogHeader>
-                                                                <AlertDialogTitle>
-                                                                    Delete Todo
-                                                                </AlertDialogTitle>
-                                                                <AlertDialogDescription>
-                                                                    Are you sure
-                                                                    you want to
-                                                                    delete "
-                                                                    {todo.title}
-                                                                    "? This
-                                                                    action
-                                                                    cannot be
-                                                                    undone.
-                                                                </AlertDialogDescription>
-                                                            </AlertDialogHeader>
-                                                            <AlertDialogFooter>
-                                                                <AlertDialogCancel
-                                                                    onClick={
-                                                                        handleCancelDelete
-                                                                    }
-                                                                    disabled={
-                                                                        deleteProcessing
-                                                                    }
-                                                                >
-                                                                    Cancel
-                                                                </AlertDialogCancel>
-                                                                <AlertDialogAction
-                                                                    onClick={
-                                                                        handleConfirmDelete
-                                                                    }
-                                                                    disabled={
-                                                                        deleteProcessing
-                                                                    }
-                                                                >
-                                                                    {deleteProcessing
-                                                                        ? 'Deleting...'
-                                                                        : 'Delete'}
-                                                                </AlertDialogAction>
-                                                            </AlertDialogFooter>
-                                                        </AlertDialogContent>
-                                                    </AlertDialog>
-                                                </div>
-                                            </div>
-                                            {todo.description && (
-                                                <p
+
+                                        <div className="min-w-0 flex-1">
+                                            <div className="flex min-w-0 flex-1 items-center gap-4">
+                                                <h3
                                                     className={cn(
-                                                        'text-xs text-muted-foreground sm:text-sm',
+                                                        'truncate text-sm font-medium',
                                                         todo.status ===
-                                                            'completed'
-                                                            ? 'line-through'
-                                                            : '',
+                                                            'completed' &&
+                                                            'text-muted-foreground line-through',
                                                     )}
                                                 >
-                                                    {todo.description}
-                                                </p>
-                                            )}
-                                            <p className="text-xs text-muted-foreground">
-                                                Created{' '}
-                                                {new Date(
-                                                    todo.created_at,
-                                                ).toLocaleDateString()}
+                                                    {todo.title}
+                                                </h3>
+                                                <div className="flex items-center gap-1">
+                                                    <Badge
+                                                        className={cn(
+                                                            'h-5 px-2 text-xs',
+                                                            TodoConfig.status
+                                                                .colors[
+                                                                todo.status
+                                                            ],
+                                                        )}
+                                                    >
+                                                        {
+                                                            TodoConfig.status
+                                                                .labels[
+                                                                todo.status
+                                                            ]
+                                                        }
+                                                    </Badge>
+                                                    <Badge
+                                                        variant="outline"
+                                                        className="h-5 px-2 text-xs"
+                                                    >
+                                                        {
+                                                            TodoConfig.category
+                                                                .labels[
+                                                                todo.category
+                                                            ]
+                                                        }
+                                                    </Badge>
+                                                    <span className="ml-4 inline-block text-xs text-muted-foreground">
+                                                        {new Date(
+                                                            todo.created_at,
+                                                        ).toLocaleDateString()}
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <p
+                                                className={cn(
+                                                    'mt-1 line-clamp-2 text-xs text-muted-foreground',
+                                                    todo.status ===
+                                                        'completed' &&
+                                                        'line-through',
+                                                )}
+                                            >
+                                                {todo.description}
                                             </p>
                                         </div>
+
+                                        <AlertDialog
+                                            open={todoToDelete === todo.id}
+                                            onOpenChange={(open) =>
+                                                !open && setTodoToDelete(null)
+                                            }
+                                        >
+                                            <AlertDialogTrigger asChild>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() =>
+                                                        handleDeleteClick(
+                                                            todo.id,
+                                                        )
+                                                    }
+                                                    disabled={deleteProcessing}
+                                                    className="flex-shrink-0 p-0 text-muted-foreground hover:text-destructive"
+                                                >
+                                                    <Trash2 className="size-4 opacity-60" />
+                                                </Button>
+                                            </AlertDialogTrigger>
+                                            <AlertDialogContent>
+                                                <AlertDialogHeader>
+                                                    <AlertDialogTitle>
+                                                        Delete Todo
+                                                    </AlertDialogTitle>
+                                                    <AlertDialogDescription>
+                                                        Are you sure you want to
+                                                        delete "{todo.title}"?
+                                                        This action cannot be
+                                                        undone.
+                                                    </AlertDialogDescription>
+                                                </AlertDialogHeader>
+                                                <AlertDialogFooter>
+                                                    <AlertDialogCancel
+                                                        onClick={
+                                                            handleCancelDelete
+                                                        }
+                                                        disabled={
+                                                            deleteProcessing
+                                                        }
+                                                    >
+                                                        Cancel
+                                                    </AlertDialogCancel>
+                                                    <AlertDialogAction
+                                                        onClick={
+                                                            handleConfirmDelete
+                                                        }
+                                                        disabled={
+                                                            deleteProcessing
+                                                        }
+                                                    >
+                                                        {deleteProcessing
+                                                            ? 'Deleting...'
+                                                            : 'Delete'}
+                                                    </AlertDialogAction>
+                                                </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
                                     </div>
                                 </CardContent>
                             </Card>
@@ -642,12 +654,138 @@ export default function TodosIndex({
                     )}
                 </div>
 
-                {/* Pagination */}
                 {pagination.last_page > 1 && (
-                    <div className="flex items-center justify-center gap-2 pt-2">
-                        <p className="text-sm text-muted-foreground">
-                            Page {pagination.current_page} of{' '}
-                            {pagination.last_page}
+                    <div className="flex flex-col items-center gap-2">
+                        <Pagination>
+                            <PaginationContent>
+                                {pagination.current_page > 1 && (
+                                    <PaginationItem>
+                                        <PaginationPrevious
+                                            href="#"
+                                            onClick={(e: React.MouseEvent) => {
+                                                e.preventDefault();
+                                                handlePageChange(
+                                                    pagination.current_page - 1,
+                                                );
+                                            }}
+                                        />
+                                    </PaginationItem>
+                                )}
+
+                                {/* First page */}
+                                {pagination.current_page > 3 && (
+                                    <>
+                                        <PaginationItem>
+                                            <PaginationLink
+                                                href="#"
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    handlePageChange(1);
+                                                }}
+                                            >
+                                                1
+                                            </PaginationLink>
+                                        </PaginationItem>
+                                        {pagination.current_page > 4 && (
+                                            <PaginationItem>
+                                                <PaginationEllipsis />
+                                            </PaginationItem>
+                                        )}
+                                    </>
+                                )}
+
+                                {/* Previous page */}
+                                {pagination.current_page > 1 && (
+                                    <PaginationItem>
+                                        <PaginationLink
+                                            href="#"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                handlePageChange(
+                                                    pagination.current_page - 1,
+                                                );
+                                            }}
+                                        >
+                                            {pagination.current_page - 1}
+                                        </PaginationLink>
+                                    </PaginationItem>
+                                )}
+
+                                {/* Current page */}
+                                <PaginationItem>
+                                    <PaginationLink
+                                        href="#"
+                                        isActive
+                                        onClick={(e) => e.preventDefault()}
+                                    >
+                                        {pagination.current_page}
+                                    </PaginationLink>
+                                </PaginationItem>
+
+                                {/* Next page */}
+                                {pagination.current_page <
+                                    pagination.last_page && (
+                                    <PaginationItem>
+                                        <PaginationLink
+                                            href="#"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                handlePageChange(
+                                                    pagination.current_page + 1,
+                                                );
+                                            }}
+                                        >
+                                            {pagination.current_page + 1}
+                                        </PaginationLink>
+                                    </PaginationItem>
+                                )}
+
+                                {/* Last page */}
+                                {pagination.current_page <
+                                    pagination.last_page - 2 && (
+                                    <>
+                                        {pagination.current_page <
+                                            pagination.last_page - 3 && (
+                                            <PaginationItem>
+                                                <PaginationEllipsis />
+                                            </PaginationItem>
+                                        )}
+                                        <PaginationItem>
+                                            <PaginationLink
+                                                href="#"
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    handlePageChange(
+                                                        pagination.last_page,
+                                                    );
+                                                }}
+                                            >
+                                                {pagination.last_page}
+                                            </PaginationLink>
+                                        </PaginationItem>
+                                    </>
+                                )}
+
+                                {pagination.current_page <
+                                    pagination.last_page && (
+                                    <PaginationItem>
+                                        <PaginationNext
+                                            href="#"
+                                            onClick={(e: React.MouseEvent) => {
+                                                e.preventDefault();
+                                                handlePageChange(
+                                                    pagination.current_page + 1,
+                                                );
+                                            }}
+                                        />
+                                    </PaginationItem>
+                                )}
+                            </PaginationContent>
+                        </Pagination>
+
+                        <p className="text-xs text-muted-foreground">
+                            Showing {pagination.from || 0} to{' '}
+                            {pagination.to || 0} of {pagination.total} results
                         </p>
                     </div>
                 )}

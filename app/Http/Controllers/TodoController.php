@@ -42,7 +42,13 @@ class TodoController extends Controller
             'pagination' => [
                 'current_page' => $todos->currentPage(),
                 'last_page' => $todos->lastPage(),
+                'per_page' => $todos->perPage(),
                 'total' => $todos->total(),
+                'from' => $todos->firstItem(),
+                'to' => $todos->lastItem(),
+                'has_more_pages' => $todos->hasMorePages(),
+                'prev_page_url' => $todos->previousPageUrl(),
+                'next_page_url' => $todos->nextPageUrl(),
             ],
             'filters' => $request->only(['status', 'category', 'search']),
         ]);
