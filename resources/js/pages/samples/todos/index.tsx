@@ -37,8 +37,9 @@ import { cn } from '@/lib/utils';
 import todos from '@/routes/todos';
 import { Filters } from '@/types';
 import { Head, router, useForm } from '@inertiajs/react';
-import { Plus, Search, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import debounce from 'lodash-es/debounce';
+import { Plus, Search, Trash2, X } from 'lucide-react';
+import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 interface TodosIndexProps {
@@ -51,6 +52,8 @@ interface TodosIndexProps {
     filters: Filters;
 }
 
+const searchDebounceMs = 300;
+
 export default function TodosIndex({
     todos: todoList,
     pagination,
@@ -58,6 +61,7 @@ export default function TodosIndex({
 }: TodosIndexProps) {
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
     const [todoToDelete, setTodoToDelete] = useState<number | null>(null);
+    const searchInputRef = useRef<HTMLInputElement>(null);
 
     const {
         data: createData,
@@ -74,7 +78,6 @@ export default function TodosIndex({
 
     const { patch: toggleStatus, processing: toggleProcessing } = useForm();
     const { delete: deleteTodo, processing: deleteProcessing } = useForm();
-    const { get: filterTodos } = useForm();
 
     const handleCreateSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -108,31 +111,30 @@ export default function TodosIndex({
     const handleCancelDelete = () => setTodoToDelete(null);
 
     const handleFilter = (filterType: 'status' | 'category', value: string) => {
-        const params = new URLSearchParams();
+        const filterParams: Record<string, string> = {};
 
         // preserve other filters
-        if (filters.search) params.set('search', filters.search);
+        if (filters.search) filterParams.search = filters.search;
         if (filters.status && filterType !== 'status')
-            params.set('status', filters.status);
+            filterParams.status = filters.status;
         if (filters.category && filterType !== 'category')
-            params.set('category', filters.category);
+            filterParams.category = filters.category;
 
         // set new filter value
-        if (value && value !== 'all') params.set(filterType, value);
+        if (value && value !== 'all') filterParams[filterType] = value;
 
-        const url =
-            todos.index().url +
-            (params.toString() ? `?${params.toString()}` : '');
-        filterTodos(url, { preserveScroll: true });
+        router.get(todos.index().url, filterParams, {
+            preserveState: true,
+            preserveScroll: true,
+        });
     };
 
-    const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = e.currentTarget.value;
-
+    // Create debounced search function
+    const debouncedSearch = debounce((value: string) => {
         router.get(
             todos.index().url,
             {
-                search: value,
+                search: value || undefined, // Don't send empty string
                 ...(filters.status && { status: filters.status }),
                 ...(filters.category && { category: filters.category }),
             },
@@ -141,6 +143,35 @@ export default function TodosIndex({
                 preserveScroll: true,
             },
         );
+    }, searchDebounceMs);
+
+    const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.currentTarget.value;
+        debouncedSearch(value);
+    };
+
+    const clearSearch = () => {
+        // Clear search with preserveState to avoid remounting
+        router.get(
+            todos.index().url,
+            {
+                ...(filters.status && { status: filters.status }),
+                ...(filters.category && { category: filters.category }),
+            },
+            {
+                preserveState: true,
+                preserveScroll: true,
+                onSuccess: () => {
+                    // Focus the input after request completes
+                    searchInputRef.current?.focus();
+                },
+            },
+        );
+
+        // Manually clear the uncontrolled input's value
+        if (searchInputRef.current) {
+            searchInputRef.current.value = '';
+        }
     };
 
     return (
@@ -274,12 +305,24 @@ export default function TodosIndex({
                     <div className="relative w-full">
                         <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                         <Input
+                            ref={searchInputRef}
                             type="search"
                             placeholder="Search todos..."
                             defaultValue={filters.search || ''}
                             onChange={handleSearch}
-                            className="w-full pl-10"
+                            className="w-full pr-10 pl-10"
                         />
+                        {filters.search && (
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={clearSearch}
+                                className="absolute top-1/2 right-2 h-6 w-6 -translate-y-1/2 p-0 text-muted-foreground hover:text-foreground"
+                            >
+                                <X className="h-4 w-4" />
+                            </Button>
+                        )}
                     </div>
 
                     {/* Filter Controls */}
