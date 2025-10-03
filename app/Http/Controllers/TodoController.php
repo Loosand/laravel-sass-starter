@@ -8,7 +8,6 @@ use App\Data\TodoData;
 use App\Http\Requests\StoreTodoRequest;
 use App\Http\Requests\UpdateTodoRequest;
 use App\Models\Todo;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -20,7 +19,15 @@ class TodoController extends Controller
 {
     public function index(Request $request): Response
     {
+        $search = $request->get('search');
+
         $todos = Todo::query()
+            ->when($search, function ($query, $searchTerm) {
+                $query->where(function ($q) use ($searchTerm) {
+                    $q->where('title', 'like', "%{$searchTerm}%")
+                      ->orWhere('description', 'like', "%{$searchTerm}%");
+                });
+            })
             ->when($request->get('status'), function ($query, $status) {
                 $query->where('status', $status);
             })
@@ -30,66 +37,39 @@ class TodoController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
-        return Inertia::render('Todos/Index', [
-            'todos' => TodoData::collect($todos->items()),
+        return Inertia::render('samples/todos/index', [
+            'todos' => collect($todos->items())->map(fn($todo) => TodoData::fromModel($todo)),
             'pagination' => [
                 'current_page' => $todos->currentPage(),
                 'last_page' => $todos->lastPage(),
                 'total' => $todos->total(),
             ],
-            'filters' => $request->only(['status', 'category']),
+            'filters' => $request->only(['status', 'category', 'search']),
         ]);
     }
 
-    public function show(Todo $todo): Response
+    public function store(StoreTodoRequest $request)
     {
-        return Inertia::render('Todos/Show', [
-            'todo' => TodoData::from($todo),
-        ]);
+        Todo::create($request->validated());
+
+        return redirect()->route('todos.index')->with('success', 'Todo created successfully');
     }
-
-    public function create(): Response
-    {
-        return Inertia::render('Todos/Create');
-    }
-
-    public function store(StoreTodoRequest $request): JsonResponse
-    {
-        $todo = Todo::create($request->validated());
-
-        return response()->json([
-            'message' => 'Todo created successfully',
-            'todo' => TodoData::from($todo),
-        ], 201);
-    }
-
-    public function edit(Todo $todo): Response
-    {
-        return Inertia::render('Todos/Edit', [
-            'todo' => TodoData::from($todo),
-        ]);
-    }
-
-    public function update(UpdateTodoRequest $request, Todo $todo): JsonResponse
+    
+    public function update(UpdateTodoRequest $request, Todo $todo)
     {
         $todo->update($request->validated());
 
-        return response()->json([
-            'message' => 'Todo updated successfully',
-            'todo' => TodoData::from($todo->fresh()),
-        ]);
+        return redirect()->route('todos.index')->with('success', 'Todo updated successfully');
     }
 
-    public function destroy(Todo $todo): JsonResponse
+    public function destroy(Todo $todo)
     {
         $todo->delete();
 
-        return response()->json([
-            'message' => 'Todo deleted successfully',
-        ]);
+        return redirect()->route('todos.index')->with('success', 'Todo deleted successfully');
     }
 
-    public function toggleStatus(Todo $todo): JsonResponse
+    public function toggleStatus(Todo $todo)
     {
         $newStatus = match ($todo->status->value) {
             'pending' => 'in_progress',
@@ -100,9 +80,6 @@ class TodoController extends Controller
 
         $todo->update(['status' => $newStatus]);
 
-        return response()->json([
-            'message' => 'Todo status updated successfully',
-            'todo' => TodoData::from($todo->fresh()),
-        ]);
+        return redirect()->route('todos.index')->with('success', 'Todo status updated successfully');
     }
 }
