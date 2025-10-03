@@ -15,6 +15,15 @@ class User extends Authenticatable
     use HasFactory, Notifiable, TwoFactorAuthenticatable, Impersonate;
 
     /**
+     * Admin email addresses
+     *
+     * @var array<string>
+     */
+    protected static $adminEmails = [
+        'admin@example.com',
+    ];
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var list<string>
@@ -73,16 +82,28 @@ class User extends Authenticatable
     }
 
     /**
+     * Check if the user is an admin based on email address.
+     *
+     * @return bool
+     */
+    public function isAdmin()
+    {
+        return in_array($this->email, static::$adminEmails);
+    }
+
+    /**
      * Check if user has a specific role.
-     * This is a placeholder method - implement according to your role system.
      *
      * @param string $role
      * @return bool
      */
     public function hasRole($role)
     {
-        // Implement your role checking logic here
-        // This is just a placeholder
+        if ($role === 'admin') {
+            return $this->isAdmin();
+        }
+        
+        // Add other role checking logic here if needed
         return false;
     }
 }
