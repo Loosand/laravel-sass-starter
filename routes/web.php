@@ -13,5 +13,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('dashboard');
 });
 
+Route::get('samples', function () {
+    return Inertia::render('samples/index');
+})->name('samples');
+
 require __DIR__.'/settings.php';
+require __DIR__.'/todos.php';
 require __DIR__.'/auth.php';
